@@ -1,14 +1,16 @@
 #!/usr/bin/python
 
 import sys
+import os
 import getopt
+import pefile
 
 version = 'Version 0.1'
+finalFile = 'crypted.exe'
 
 def main(argv):
 	try:
-		opts, args = getopt.getopt(argv, "hVi:o", ['help', 'version', 'infile', 'outfile'])
-	
+		opts, args = getopt.getopt(argv, "hVi:o:", ['help', 'version', 'infile', 'outfile'])
 	except getopt.GetoptError:
 		print 'Usage: ./offbit.py -i <input file> -o <output file> <args>'
 		sys.exit(2)
@@ -24,7 +26,19 @@ def main(argv):
 		if opt in ('-V', '--version'):
 			print 'offbit.py ' + version
 			sys.exit()
-	print 'Working up till now'
-
+		if opt in ('-i', '--infile'):
+			inputPath = arg
+			#strip filename from path
+			inputFile = os.path.basename(inputPath)
+		if opt in ('-o', '--outfile'):
+			finalPath = arg
+			#strip filename from path
+			finalFile = os.path.basename(finalPath)
+	print "[*] Reading '" + inputFile + "'..."
+	file = pefile.PE(inputPath)
+	print '[*] Entry Point: ' + hex(file.OPTIONAL_HEADER.AddressOfEntryPoint)
+	print "[*] Writing to '" + finalFile + "'..."
+	out = file.write(finalPath)
+	
 if __name__ == "__main__":
 	main(sys.argv[1:])
